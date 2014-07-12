@@ -1,6 +1,6 @@
-package io.github.msnider.utils;
+package io.github.msnider.inliner.utils;
 
-import io.github.msnider.domain.UserAgent;
+import io.github.msnider.inliner.domain.UserAgent;
 
 import java.util.List;
 

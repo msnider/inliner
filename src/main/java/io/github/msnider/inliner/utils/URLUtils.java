@@ -1,4 +1,4 @@
-package io.github.msnider.utils;
+package io.github.msnider.inliner.utils;
 
 import java.net.URI;
 

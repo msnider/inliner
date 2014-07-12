@@ -1,13 +1,15 @@
-package io.github.msnider.domain;
+package io.github.msnider.inliner.domain;
 
-import io.github.msnider.utils.CSSUtils;
-import io.github.msnider.utils.URLUtils;
+import io.github.msnider.inliner.utils.CSSUtils;
+import io.github.msnider.inliner.utils.URLUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -39,31 +41,23 @@ public class CascadingStyles {
 	private final URI baseURI;
 	private final UserAgent userAgent;
 	private String styles;
+	private ResponseHeaders responseHeaders = null;
 
 	public CascadingStyles(URL url, UserAgent userAgent) throws URISyntaxException {
-		this(url, String.format("@import url('%s');", url.toString()), userAgent);
-		/*
 		if (url == null)
 			throw new IllegalArgumentException("Argument `url` cannot be null");
-		
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
-		try {
-			this.styles = HttpRequest.get(url).userAgent(userAgent.getUAString()).body();
-		} catch (HttpRequestException e) {
+		
+		HttpRequest request = HttpRequest.get(url)
+				.followRedirects(true)
+				.userAgent(userAgent.getUAString());
+		if (request.ok()) {
+			this.styles = request.body();
+			this.responseHeaders = new ResponseHeaders(request.headers());
+		} else {
 			this.styles = "";
-			logger.error(e.getLocalizedMessage());
-		}*/
-	}
-	
-	/*public CascadingStyles setStyles(String styles) {
-		this.styles = styles;
-		return this;
-	}*/
-	
-	public CascadingStyles setMediaQuery(String mediaQuery) {
-		this.styles = String.format("@import url('%s') %s;", baseURI.toString(), mediaQuery);
-		return this;
+		}
 	}
 	
 	public CascadingStyles(URL url, String styles, UserAgent userAgent) throws URISyntaxException {
@@ -77,6 +71,20 @@ public class CascadingStyles {
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
 		this.styles = styles;
+	}
+	
+	public CascadingStyles restrictToMediaQuery(String mediaQuery) {
+		if (mediaQuery == null || mediaQuery.trim().isEmpty())
+			return this;
+		this.styles = String.format("@import url('%s') %s;", baseURI.toString(), mediaQuery);
+		return this;
+	}
+	
+	public CascadingStyles attachHeaders(HttpServletResponse response) {
+		if (this.responseHeaders != null) {
+			this.responseHeaders.attachCacheHeaders(response);
+		}
+		return this;
 	}
 	
 	public String inline() {

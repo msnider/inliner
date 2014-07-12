@@ -1,4 +1,4 @@
-package io.github.msnider.domain;
+package io.github.msnider.inliner.domain;
 
 public enum Orientation {
 	PORTRAIT,
