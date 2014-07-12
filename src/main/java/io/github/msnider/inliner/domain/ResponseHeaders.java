@@ -41,6 +41,8 @@ public class ResponseHeaders {
 	public ResponseHeaders(Map<String, List<String>> headers) {
 		if (headers != null) {
 			for(String key : headers.keySet()) {
+				if (key == null || key.isEmpty() || !headers.containsKey(key))
+					continue;
 				String value = headers.get(key).get(0);
 				switch (key.trim().toLowerCase()) {
 					case "age":

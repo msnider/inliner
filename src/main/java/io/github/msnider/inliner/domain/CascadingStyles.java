@@ -185,6 +185,9 @@ public class CascadingStyles {
 				}
 			}
 		});
+		
+		// Remove all import rules
+		css.removeAllImportRules();
 
 		// Output the concatenated CSS
 		CSSWriterSettings writeSettings = new CSSWriterSettings(ECSSVersion.CSS30, false); // Optimizer = false
