@@ -17,3 +17,26 @@ and it attempts to:
 **Summary:** Given a Style Sheet & User Agent, Inliner should produce a stylesheet
 that should render identically in the browser, but request 0 external resources
 and not rely on any media queries (so it will look the same on all devices).
+
+## Requirements
+
+To run the built application:
+* Java 1.7+
+
+To build:
+* JDK 1.7+
+* Maven 3
+
+## Run
+
+Inliner is built with Spring Boot, so it can easily be run via Maven:
+
+`mvn spring-boot:run`
+
+Or it can be built into a runnable jar:
+
+`mvn package`
+
+Which can be run:
+
+`java -jar target/mymodule-0.0.1-SNAPSHOT.jar`

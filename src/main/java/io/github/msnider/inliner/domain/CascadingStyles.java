@@ -40,12 +40,14 @@ public class CascadingStyles {
 
 	private final URI baseURI;
 	private final UserAgent userAgent;
-	private String styles;
+	private String styles = "";
 	private ResponseHeaders responseHeaders = null;
 
 	public CascadingStyles(URL url, UserAgent userAgent) throws URISyntaxException {
 		if (url == null)
 			throw new IllegalArgumentException("Argument `url` cannot be null");
+		if (userAgent == null)
+			throw new IllegalArgumentException("Argument `userAgent` cannot be null");
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
 		
@@ -55,8 +57,6 @@ public class CascadingStyles {
 		if (request.ok()) {
 			this.styles = request.body();
 			this.responseHeaders = new ResponseHeaders(request.headers());
-		} else {
-			this.styles = "";
 		}
 	}
 	

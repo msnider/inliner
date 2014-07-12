@@ -21,7 +21,7 @@ public class InlinerController {
 	private static final String DEFAULT_USER_AGENT = 
 			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36";
 	
-	@RequestMapping(value = "/styles", 
+	@RequestMapping(value = "/styles.css", 
 			method = { RequestMethod.GET, RequestMethod.POST }, 
 			produces = { "text/css" }, 
 			params = { "styles" })
@@ -35,7 +35,8 @@ public class InlinerController {
 			@RequestParam(value = "deviceHeight", required = false) Integer deviceHeight,
 			@RequestParam(value = "devicePixelRatio", defaultValue = "1.0") Double devicePixelRatio,
 			@RequestParam(value = "defaultFontSizePx", defaultValue = "16") Integer defaultFontSizePx,
-			HttpServletRequest request, HttpServletResponse response) throws MalformedURLException, URISyntaxException {
+			HttpServletRequest request, HttpServletResponse response) 
+					throws MalformedURLException, URISyntaxException {
 		if (deviceWidth == null)
 			deviceWidth = width;
 		if (deviceHeight == null)
@@ -49,7 +50,7 @@ public class InlinerController {
 		return cascadingStyles.inline();
 	}
 	
-	@RequestMapping(value = "/styles", 
+	@RequestMapping(value = "/styles.css", 
 			method = { RequestMethod.GET }, 
 			produces = { "text/css" })
 	public @ResponseBody String remoteStyles(
