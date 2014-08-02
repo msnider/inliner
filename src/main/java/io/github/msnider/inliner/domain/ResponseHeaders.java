@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 // Vary:Accept-Encoding
 public class ResponseHeaders {
 	
+	// TODO: Set only cache-control: public, max-age=X AND etag: HASH
+	
 	public void attachCacheHeaders(HttpServletResponse response) {
 		if (this.cacheControl != null) {
 			response.setHeader("Cache-Control", cacheControl);

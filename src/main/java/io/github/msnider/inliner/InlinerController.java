@@ -1,10 +1,13 @@
 package io.github.msnider.inliner;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import io.github.msnider.inliner.domain.CascadingStyles;
+import io.github.msnider.inliner.domain.HTML;
 import io.github.msnider.inliner.domain.UserAgent;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +23,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class InlinerController {
 	private static final String DEFAULT_USER_AGENT = 
 			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36";
+	
+	@RequestMapping("/")
+	public String index() {
+		return "index";
+	}
 	
 	/**
 	 * Given the contents of a <style> tag, a base URL, and User Agent parameters,
@@ -165,5 +173,61 @@ public class InlinerController {
 			.restrictToMediaQuery(mediaQuery)
 			.attachHeaders(response);
 		return cascadingStyles.inline();
+	}
+	
+	@RequestMapping(value = "/page.html", 
+			method = { RequestMethod.GET, RequestMethod.POST }, 
+			produces = { "text/html" }, 
+			params = { "contents" })
+	public @ResponseBody String htmlContents(
+			@RequestParam(value = "url", required = true) String url,
+			@RequestParam(value = "contents", defaultValue = "") String contents,
+			@RequestParam(value = "ua", defaultValue = DEFAULT_USER_AGENT) String ua,
+			@RequestParam(value = "width", required = true) Integer width,
+			@RequestParam(value = "height", required = true) Integer height,
+			@RequestParam(value = "deviceWidth", required = false) Integer deviceWidth,
+			@RequestParam(value = "deviceHeight", required = false) Integer deviceHeight,
+			@RequestParam(value = "devicePixelRatio", defaultValue = "1.0") Double devicePixelRatio,
+			@RequestParam(value = "defaultFontSizePx", defaultValue = "16") Integer defaultFontSizePx,
+			HttpServletRequest request, HttpServletResponse response) 
+					throws URISyntaxException, IOException {
+		if (deviceWidth == null)
+			deviceWidth = width;
+		if (deviceHeight == null)
+			deviceHeight = height;
+		
+		UserAgent userAgent = new UserAgent(ua, 
+				width, height, 
+				deviceWidth, deviceHeight, 
+				devicePixelRatio, defaultFontSizePx);
+		HTML html = new HTML(new URI(url), contents, userAgent);
+		return html.inline();
+	}
+	
+	@RequestMapping(value = "/page.html", 
+			method = { RequestMethod.GET, RequestMethod.POST }, 
+			produces = { "text/html" })
+	public @ResponseBody String htmlUrl(
+			@RequestParam(value = "url", required = true) String url,
+			@RequestParam(value = "ua", defaultValue = DEFAULT_USER_AGENT) String ua,
+			@RequestParam(value = "width", required = true) Integer width,
+			@RequestParam(value = "height", required = true) Integer height,
+			@RequestParam(value = "deviceWidth", required = false) Integer deviceWidth,
+			@RequestParam(value = "deviceHeight", required = false) Integer deviceHeight,
+			@RequestParam(value = "devicePixelRatio", defaultValue = "1.0") Double devicePixelRatio,
+			@RequestParam(value = "defaultFontSizePx", defaultValue = "16") Integer defaultFontSizePx,
+			HttpServletRequest request, HttpServletResponse response) 
+					throws URISyntaxException, IOException {
+		if (deviceWidth == null)
+			deviceWidth = width;
+		if (deviceHeight == null)
+			deviceHeight = height;
+		
+		UserAgent userAgent = new UserAgent(ua, 
+				width, height, 
+				deviceWidth, deviceHeight, 
+				devicePixelRatio, defaultFontSizePx);
+		HTML html = new HTML(new URI(url), userAgent);
+		return html.inline();
 	}
 }

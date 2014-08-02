@@ -1,6 +1,8 @@
 package io.github.msnider.inliner.utils;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +22,14 @@ public class URLUtils {
 			return relativeURL;
 		
 		try {
-			URI uri = baseURI.resolve(relativeURL);
-			return uri.toString();
+			return new URL(baseURI.toURL(), relativeURL).toExternalForm().replaceAll("/../", "/");
+			//URI uri = baseURI.resolve(relativeURL);
+			//return uri.toString();
 		} catch (IllegalArgumentException e) {
-			return relativeURL;
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
 		}
+		return relativeURL;
 	}
 }
