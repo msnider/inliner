@@ -9,32 +9,6 @@ function getDefaultFontSize(pa) {
 	return fs;
 }
 
-function submitFor(exceptFields, urlDataName) {
-	var fields = ['#styleTagUrl', '#styles', '#styleAttributeUrl', '#attribute',
-          '#linkUrl', '#mediaQuery', '#contents', '#htmlFragmentUrl', '#htmlUrl'
-      ];
-	return function() {
-		for(var i = 0; i < fields.length; i++) {
-			var field = fields[i];
-			if (exceptFields.indexOf(field) == -1) {
-				$(field).prop('disabled', 'disabled');
-				console.log('disabling ' + field);
-			}
-		}
-		var $form = $(this).closest('form');console.log($form.data(urlDataName + '-url'));
-			$form.prop('action', $form.data(urlDataName + '-url'));
-			$form.submit();
-		setTimeout(function() {
-			for(var i = 0; i < fields.length; i++) {
-				var field = fields[i];
-				if (exceptFields.indexOf(field) == -1) {
-					$(field).removeProp('disabled');
-				}
-			}
-		}, 100);
-	};
-}
-
 $(document).ready(function() {
 	$('#ua').val(navigator.userAgent);
 	$('#width').val(window.innerWidth);
@@ -44,9 +18,18 @@ $(document).ready(function() {
 	$('#devicePixelRatio').val(window.devicePixelRatio);
 	$('#defaultFontSizePx').val(getDefaultFontSize()[1]);
 	
-	$('#getLinkTagStyles').click(submitFor(['#linkUrl', '#mediaQuery'], 'styles'));
-	$('#getStyleTagStyles').click(submitFor(['#styleTagUrl', '#styles'], 'styles'));
-	$('#getStyleAttributeStyles').click(submitFor(['#styleAttributeUrl', '#attribute'], 'styles'));
-	$('#getHtml').click(submitFor(['#htmlUrl'], 'page'));
-	$('#getHtmlFragment').click(submitFor(['#htmlFragmentUrl', '#contents'], 'page'));
+	$('form.form-inliner').submit(function(e) {
+		e.preventDefault();
+		$(this).find('input[type=hidden]').remove();
+		$(this).append(
+			$('<input type="hidden" name="ua">').val($('#ua').val()),
+			$('<input type="hidden" name="width">').val($('#width').val()),
+			$('<input type="hidden" name="height">').val($('#height').val()),
+			$('<input type="hidden" name="deviceWidth">').val($('#deviceWidth').val()),
+			$('<input type="hidden" name="deviceHeight">').val($('#deviceHeight').val()),
+			$('<input type="hidden" name="devicePixelRatio">').val($('#devicePixelRatio').val()),
+			$('<input type="hidden" name="defaultFontSizePx">').val($('#defaultFontSizePx').val())
+		);
+		$(this).get(0).submit();
+	});
 });
