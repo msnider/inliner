@@ -200,7 +200,8 @@ public class InlinerController {
 				width, height, 
 				deviceWidth, deviceHeight, 
 				devicePixelRatio, defaultFontSizePx);
-		HTML html = new HTML(new URI(url), contents, userAgent);
+		HTML html = new HTML(new URI(url), contents, userAgent)
+			.attachHeaders(response);
 		return html.inline();
 	}
 	
@@ -227,7 +228,8 @@ public class InlinerController {
 				width, height, 
 				deviceWidth, deviceHeight, 
 				devicePixelRatio, defaultFontSizePx);
-		HTML html = new HTML(new URI(url), userAgent);
+		HTML html = new HTML(new URI(url), userAgent)
+			.attachHeaders(response);
 		return html.inline();
 	}
 }

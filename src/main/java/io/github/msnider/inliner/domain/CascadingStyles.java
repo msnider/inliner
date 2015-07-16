@@ -71,6 +71,7 @@ public class CascadingStyles {
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
 		this.styles = styles;
+		this.responseHeaders = new ResponseHeaders();
 	}
 	
 	public CascadingStyles restrictToMediaQuery(String mediaQuery) {

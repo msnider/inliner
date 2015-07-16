@@ -37,7 +37,7 @@ public class ResponseHeaders {
 	
 	public ResponseHeaders() {
 		this(null);
-		// TODO: Setup a default of 5 minutes cache
+		this.cacheControl = "Cache-Control:public, max-age=3600";
 	}
 	
 	public ResponseHeaders(Map<String, List<String>> headers) {
