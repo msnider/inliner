@@ -1,6 +1,7 @@
 package io.github.msnider.inliner.domain;
 
 import io.github.msnider.inliner.utils.CSSUtils;
+import io.github.msnider.inliner.utils.HttpUtils;
 import io.github.msnider.inliner.utils.URLUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -9,7 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import javax.servlet.http.HttpServletResponse;
+
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -41,7 +42,6 @@ public class CascadingStyles {
 	private final URI baseURI;
 	private final UserAgent userAgent;
 	private String styles = "";
-	private ResponseHeaders responseHeaders = null;
 
 	public CascadingStyles(URL url, UserAgent userAgent) throws URISyntaxException {
 		if (url == null)
@@ -51,12 +51,13 @@ public class CascadingStyles {
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
 		
-		HttpRequest request = HttpRequest.get(url)
-				.followRedirects(true)
-				.userAgent(userAgent.getUAString());
-		if (request.ok()) {
-			this.styles = request.body();
-			this.responseHeaders = new ResponseHeaders(request.headers());
+		HttpRequest request = HttpUtils.getRequest(url, userAgent.getUAString());
+		try {
+			if (request.ok()) {
+				this.styles = request.body();
+			}
+		} catch (HttpRequestException e) {
+			// CSS document was un-reachable - nothing we can do
 		}
 	}
 	
@@ -71,20 +72,12 @@ public class CascadingStyles {
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
 		this.styles = styles;
-		this.responseHeaders = new ResponseHeaders();
 	}
 	
 	public CascadingStyles restrictToMediaQuery(String mediaQuery) {
 		if (mediaQuery == null || mediaQuery.trim().isEmpty())
 			return this;
 		this.styles = String.format("@import url('%s') %s;", baseURI.toString(), mediaQuery);
-		return this;
-	}
-	
-	public CascadingStyles attachHeaders(HttpServletResponse response) {
-		if (this.responseHeaders != null) {
-			this.responseHeaders.attachCacheHeaders(response);
-		}
 		return this;
 	}
 	
@@ -99,6 +92,8 @@ public class CascadingStyles {
 			logger.warn(e.getLocalizedMessage());
 			return "";
 		}
+		if (css == null)
+			return "";
 
 		// Build URLs in the CSS to be absolute from the original document
 		CSSVisitor.visitCSSUrl(css, new AbstractModifyingCSSUrlVisitor() {
@@ -166,7 +161,7 @@ public class CascadingStyles {
 				if (!cssURI.isDataURL()) {
 					// Convert non-data-uri's to data-uri's
 					try {
-						HttpRequest request = HttpRequest.get(cssURI.getURI()).userAgent(userAgent.getUAString());
+						HttpRequest request = HttpUtils.getRequest(cssURI.getURI(), userAgent.getUAString()); 
 						if (request.ok()) {
 							ByteArrayOutputStream baos = new ByteArrayOutputStream();
 							request.receive(baos);

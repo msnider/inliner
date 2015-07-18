@@ -1,5 +1,6 @@
 package io.github.msnider.inliner.domain;
 
+import io.github.msnider.inliner.utils.HttpUtils;
 import io.github.msnider.inliner.utils.URLUtils;
 
 import java.io.ByteArrayInputStream;
@@ -12,9 +13,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.tomcat.util.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -34,14 +33,12 @@ public class HTML {
 	private final String baseURL;
 	private final UserAgent userAgent;
 	private final Document doc;
-	private ResponseHeaders responseHeaders = null;
 	
 	// TODO: Make sure we use the right charset
 	public HTML(URI baseUrl, String html, UserAgent userAgent) throws IOException {
 		this.baseURI = baseUrl;
 		this.baseURL = baseURI.toString();
 		this.userAgent = userAgent;
-		this.responseHeaders = new ResponseHeaders();
 		
 		InputStream in = new ByteArrayInputStream(html.getBytes());
 		this.doc = Jsoup.parse(in, Charset.defaultCharset().name(), baseURL);
@@ -51,28 +48,22 @@ public class HTML {
 		this.baseURI = baseUrl;
 		this.baseURL = baseURI.toString();
 		this.userAgent = userAgent;
-		/*this.doc = Jsoup.connect(baseURL)
-				.userAgent(userAgent.getUAString())
-				.timeout(5000)
-				.followRedirects(true)
-				.get();*/
+
+		/*HttpResponse<String> response = Unirest.get(baseURL)
+				.header("User-Agent", userAgent.getUAString())
+				.asString();
+		if (response.getStatus() < 400) {
+			this.doc = Jsoup.parse(response.getRawBody(), Charset.defaultCharset().name(), baseURL);
+		} else {
+			throw new IllegalArgumentException("Could not retrieve HTML");
+		}*/
 		
-		HttpRequest request = HttpRequest.get(baseURL)
-				.followRedirects(true)
-				.userAgent(userAgent.getUAString());
+		HttpRequest request = HttpUtils.getRequest(baseURL, userAgent.getUAString());
 		if (request.ok()) {
 			this.doc = Jsoup.parse(request.stream(), Charset.defaultCharset().name(), baseURL);
-			this.responseHeaders = new ResponseHeaders(request.headers());
 		} else {
 			throw new IllegalArgumentException("Could not retrieve HTML");
 		}
-	}
-	
-	public HTML attachHeaders(HttpServletResponse response) {
-		if (this.responseHeaders != null) {
-			this.responseHeaders.attachCacheHeaders(response);
-		}
-		return this;
 	}
 	
 	public String inline() {
@@ -172,9 +163,7 @@ public class HTML {
 			if (src != null && !src.startsWith("data:")) {
 				String url = resolveURL(src);
 				
-				HttpRequest request = HttpRequest.get(url)
-						.followRedirects(true)
-						.userAgent(userAgent.getUAString());
+				HttpRequest request = HttpUtils.getRequest(url, userAgent.getUAString());
 				if (request.ok()) {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					request.receive(baos);

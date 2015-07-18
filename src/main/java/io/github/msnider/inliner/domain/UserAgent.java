@@ -15,12 +15,14 @@ import org.apache.commons.math3.fraction.FractionFormat;
  * @see https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Media_queries
  * @author Matt Snider
  *
- * TODO: Proper em calculations
  */
 public class UserAgent {
 	//http://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/#boot-features-logging
 	//view-source:http://www.vogella.com/tutorials/JUnit/article.html
 	//http://www.vogella.com/css/A.articles.css.pagespeed.cf.gZJqTjSP1p.css
+	
+	public static final String DEFAULT_USER_AGENT = 
+			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36";
 
 	public boolean matchesMedium(String medium) {
 		if (medium == null || medium.trim().isEmpty())
