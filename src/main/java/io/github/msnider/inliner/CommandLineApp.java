@@ -1,5 +1,7 @@
 package io.github.msnider.inliner;
 
+import io.github.msnider.inliner.utils.Proxy;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,6 +19,9 @@ public class CommandLineApp {
 		Integer deviceHeight = toInteger(System.getProperty("page.deviceHeight"), height);
 		Double devicePixelRatio = toDouble(System.getProperty("page.devicePixelRatio"), 1.0);
 		Integer defaultFontSizePx = toInteger(System.getProperty("page.defaultFontSizePx"), 14);
+		String proxyUrl = System.getProperty("page.proxyUrl");
+		String proxyParam = System.getProperty("page.proxyParam");
+		Proxy proxy = new Proxy(proxyUrl, proxyParam);
 		
 		// Read input file from STDIN
 		StringBuilder builder = new StringBuilder();
@@ -38,7 +43,8 @@ public class CommandLineApp {
 					deviceWidth, 
 					deviceHeight, 
 					devicePixelRatio,
-					defaultFontSizePx);
+					defaultFontSizePx,
+					proxy);
 			System.out.print(html);
 			System.exit(0);
 		} catch (URISyntaxException | IOException e) {

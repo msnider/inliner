@@ -2,6 +2,7 @@ package io.github.msnider.inliner;
 
 import io.github.msnider.inliner.domain.HTML;
 import io.github.msnider.inliner.domain.UserAgent;
+import io.github.msnider.inliner.utils.Proxy;
 
 import java.io.IOException;
 import java.net.URI;
@@ -34,7 +35,8 @@ public class InlinerService {
 			Integer deviceWidth,
 			Integer deviceHeight,
 			Double devicePixelRatio,
-			Integer defaultFontSizePx) 
+			Integer defaultFontSizePx,
+			Proxy proxy) 
 					throws URISyntaxException, IOException {
 		if (deviceWidth == null)
 			deviceWidth = width;
@@ -50,7 +52,7 @@ public class InlinerService {
 				deviceWidth, deviceHeight, 
 				devicePixelRatio, defaultFontSizePx);
 		HTML html = (contents == null || contents.isEmpty()) ? 
-				new HTML(new URI(url), userAgent) : new HTML(new URI(url), contents, userAgent);
+				new HTML(new URI(url), userAgent, proxy) : new HTML(new URI(url), contents, userAgent, proxy);
 		return html.inline();
 	}
 	

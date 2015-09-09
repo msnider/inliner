@@ -1,7 +1,7 @@
 package io.github.msnider.inliner.domain;
 
 import io.github.msnider.inliner.utils.CSSUtils;
-import io.github.msnider.inliner.utils.HttpUtils;
+import io.github.msnider.inliner.utils.Proxy;
 import io.github.msnider.inliner.utils.URLUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -9,8 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-
-
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -41,17 +39,19 @@ public class CascadingStyles {
 
 	private final URI baseURI;
 	private final UserAgent userAgent;
+	private final Proxy proxy;
 	private String styles = "";
 
-	public CascadingStyles(URL url, UserAgent userAgent) throws URISyntaxException {
+	public CascadingStyles(URL url, UserAgent userAgent, Proxy proxy) throws URISyntaxException {
 		if (url == null)
 			throw new IllegalArgumentException("Argument `url` cannot be null");
 		if (userAgent == null)
 			throw new IllegalArgumentException("Argument `userAgent` cannot be null");
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
+		this.proxy = proxy;
 		
-		HttpRequest request = HttpUtils.getRequest(url, userAgent.getUAString());
+		HttpRequest request = proxy.getRequest(url, userAgent.getUAString());
 		try {
 			if (request.ok()) {
 				this.styles = request.body();
@@ -61,7 +61,7 @@ public class CascadingStyles {
 		}
 	}
 	
-	public CascadingStyles(URL url, String styles, UserAgent userAgent) throws URISyntaxException {
+	public CascadingStyles(URL url, String styles, UserAgent userAgent, Proxy proxy) throws URISyntaxException {
 		if (url == null)
 			throw new IllegalArgumentException("Argument `url` cannot be null");
 		if (styles == null)
@@ -71,6 +71,7 @@ public class CascadingStyles {
 		
 		this.baseURI = url.toURI();
 		this.userAgent = userAgent;
+		this.proxy = proxy;
 		this.styles = styles;
 	}
 	
@@ -141,7 +142,7 @@ public class CascadingStyles {
 					final String sURI = aImportRule.getLocationString();
 	
 					try {
-						String importCSS = new CascadingStyles(new URL(sURI), userAgent).inline();
+						String importCSS = new CascadingStyles(new URL(sURI), userAgent, proxy).inline();
 						if (importCSS != null) {
 							importedCSS.append(importCSS).append("\n");
 						}
@@ -161,7 +162,7 @@ public class CascadingStyles {
 				if (!cssURI.isDataURL()) {
 					// Convert non-data-uri's to data-uri's
 					try {
-						HttpRequest request = HttpUtils.getRequest(cssURI.getURI(), userAgent.getUAString()); 
+						HttpRequest request = proxy.getRequest(cssURI.getURI(), userAgent.getUAString()); 
 						if (request.ok()) {
 							ByteArrayOutputStream baos = new ByteArrayOutputStream();
 							request.receive(baos);

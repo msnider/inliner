@@ -1,6 +1,6 @@
 package io.github.msnider.inliner.domain;
 
-import io.github.msnider.inliner.utils.HttpUtils;
+import io.github.msnider.inliner.utils.Proxy;
 import io.github.msnider.inliner.utils.URLUtils;
 
 import java.io.ByteArrayInputStream;
@@ -33,21 +33,24 @@ public class HTML {
 	private final String baseURL;
 	private final UserAgent userAgent;
 	private final Document doc;
+	private final Proxy proxy;
 	
 	// TODO: Make sure we use the right charset
-	public HTML(URI baseUrl, String html, UserAgent userAgent) throws IOException {
+	public HTML(URI baseUrl, String html, UserAgent userAgent, Proxy proxy) throws IOException {
 		this.baseURI = baseUrl;
 		this.baseURL = baseURI.toString();
 		this.userAgent = userAgent;
+		this.proxy = proxy;
 		
 		InputStream in = new ByteArrayInputStream(html.getBytes());
 		this.doc = Jsoup.parse(in, Charset.defaultCharset().name(), baseURL);
 	}
 
-	public HTML(URI baseUrl, UserAgent userAgent) throws IOException {
+	public HTML(URI baseUrl, UserAgent userAgent, Proxy proxy) throws IOException {
 		this.baseURI = baseUrl;
 		this.baseURL = baseURI.toString();
 		this.userAgent = userAgent;
+		this.proxy = proxy;
 
 		/*HttpResponse<String> response = Unirest.get(baseURL)
 				.header("User-Agent", userAgent.getUAString())
@@ -58,7 +61,7 @@ public class HTML {
 			throw new IllegalArgumentException("Could not retrieve HTML");
 		}*/
 		
-		HttpRequest request = HttpUtils.getRequest(baseURL, userAgent.getUAString());
+		HttpRequest request = proxy.getRequest(baseURL, userAgent.getUAString());
 		if (request.ok()) {
 			this.doc = Jsoup.parse(request.stream(), Charset.defaultCharset().name(), baseURL);
 		} else {
@@ -94,7 +97,7 @@ public class HTML {
 			logger.info("Doc Base URI: " + doc.baseUri());
 			logger.info("=== /STYLE TAG ===");
 			try {
-				String css = new CascadingStyles(new URL(doc.baseUri()), rawStyles, userAgent).inline();
+				String css = new CascadingStyles(new URL(doc.baseUri()), rawStyles, userAgent, proxy).inline();
 				if (css != null && !css.trim().isEmpty()) {
 					Element styleTag = new Element(Tag.valueOf("style"), doc.baseUri());
 					DataNode styles = new DataNode(css.trim(), doc.baseUri());
@@ -129,7 +132,7 @@ public class HTML {
 					media = "";
 				String fauxStyle = String.format("@import url(%s) %s;", url, media);
 				try {
-					String css = new CascadingStyles(new URL(url), fauxStyle, userAgent).inline();
+					String css = new CascadingStyles(new URL(url), fauxStyle, userAgent, proxy).inline();
 					if (css != null && !css.trim().isEmpty()) {
 						// Replace with a Style tag
 						Element styleTag = new Element(Tag.valueOf("style"), doc.baseUri());
@@ -163,7 +166,7 @@ public class HTML {
 			if (src != null && !src.startsWith("data:")) {
 				String url = resolveURL(src);
 				
-				HttpRequest request = HttpUtils.getRequest(url, userAgent.getUAString());
+				HttpRequest request = proxy.getRequest(url, userAgent.getUAString());
 				if (request.ok()) {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					request.receive(baos);
