@@ -167,7 +167,7 @@ public class HTML {
 				String url = resolveURL(src);
 				
 				HttpRequest request = proxy.getRequest(url, userAgent.getUAString());
-				if (request.ok()) {
+				if (request.ok() || (request.code() < 400 && request.code() >= 200)) {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					request.receive(baos);
 					String mimeType = request.contentType();
