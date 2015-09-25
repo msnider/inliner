@@ -165,6 +165,8 @@ public class HTML {
 			String src = element.attr("src");
 			if (src != null && !src.startsWith("data:")) {
 				String url = resolveURL(src);
+				element.attr("data-original-src", url);
+				element.attr("data-proxy-src", proxy.buildProxiedUrl(url));
 				
 				HttpRequest request = proxy.getRequest(url, userAgent.getUAString());
 				if (request.ok() || (request.code() < 400 && request.code() >= 200)) {
@@ -175,6 +177,7 @@ public class HTML {
 					String dataURI = "data:" + mimeType + ";base64," + base64;
 					element.attr("src", dataURI);
 				}
+				element.attr("data-proxy-code", Integer.toString(request.code()));
 			}
 		}
 		

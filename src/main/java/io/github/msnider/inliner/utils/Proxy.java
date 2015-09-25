@@ -21,7 +21,7 @@ public class Proxy {
 				!this.proxyParam.trim().isEmpty() && !this.proxyUrl.trim().isEmpty());
 	}
 	
-	protected String buildProxiedUrl(String url) {
+	public String buildProxiedUrl(String url) {
 		if (!shouldProxy)
 			return url;
 		try {
@@ -36,7 +36,7 @@ public class Proxy {
 		return url;
 	}
 	
-	protected URL buildProxiedUrl(URL url) {
+	public URL buildProxiedUrl(URL url) {
 		if (!shouldProxy)
 			return url;
 		try {
@@ -56,6 +56,6 @@ public class Proxy {
 	}
 	
 	public HttpRequest getRequest(URL url, String ua) {
-		return HttpUtils.getRequest(url, ua);
+		return HttpUtils.getRequest((url), ua);
 	}
 }
